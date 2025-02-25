@@ -42,12 +42,12 @@ st.markdown(
 
 # Title & Description
 st.markdown("""
-    <h1 style='text-align: center; color: cyan;'>🧹 Data Sweeper</h1>
+    <h1 style='text-align: center; color: cyan;'> Data Sweeper</h1>
     <h3 style='text-align: center; color: lightgray;'>Transform and Clean Your Data Instantly</h3>
 """, unsafe_allow_html=True)
 
 # File Uploader
-uploaded_files = st.file_uploader("📂 Upload CSV or Excel files:", type=["csv", "xlsx"], accept_multiple_files=True)
+uploaded_files = st.file_uploader(" Upload CSV or Excel files:", type=["csv", "xlsx"], accept_multiple_files=True)
 
 if uploaded_files:
     for file in uploaded_files:
@@ -59,42 +59,42 @@ if uploaded_files:
             elif file_ext == ".xlsx":
                 df = pd.read_excel(file)
             else:
-                st.error(f"🚫 Unsupported file type: {file_ext}")
+                st.error(f" Unsupported file type: {file_ext}")
                 continue
         except Exception as e:
-            st.error(f"❌ Error reading file {file.name}: {str(e)}")
+            st.error(f" Error reading file {file.name}: {str(e)}")
             continue
 
         # Display File Preview
-        st.markdown(f"### 📜 Preview of {file.name}")
+        st.markdown(f"###  Preview of {file.name}")
         st.dataframe(df.head())
 
         # Data Cleaning Options
-        with st.expander(f"🧹 Data Cleaning for {file.name}"):
+        with st.expander(f" Data Cleaning for {file.name}"):
             col1, col2 = st.columns(2)
 
             with col1:
-                if st.button(f"🗑 Remove Duplicates - {file.name}"):
+                if st.button(f" Remove Duplicates - {file.name}"):
                     df.drop_duplicates(inplace=True)
                     st.success("Duplicates removed!")
 
             with col2:
-                if st.button(f"🛠 Fill Missing Values - {file.name}"):
+                if st.button(f" Fill Missing Values - {file.name}"):
                     numeric_cols = df.select_dtypes(include=['number']).columns
                     df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
                     st.success("Missing values filled!")
 
-            columns = st.multiselect(f"📌 Select Columns for {file.name}", df.columns, default=df.columns)
+            columns = st.multiselect(f" Select Columns for {file.name}", df.columns, default=df.columns)
             df = df[columns]
 
         # Data Visualization
-        with st.expander(f"📊 Visualization for {file.name}"):
+        with st.expander(f" Visualization for {file.name}"):
             st.bar_chart(df.select_dtypes(include="number").iloc[:, :2])
 
         # Conversion Options
-        with st.expander(f"🔄 Convert {file.name}"):
+        with st.expander(f" Convert {file.name}"):
             conversion_type = st.radio(f"Convert {file.name} to:", ["CSV", "Excel"], key=file.name)
-            if st.button(f"💾 Convert {file.name}"):
+            if st.button(f" Convert {file.name}"):
                 buffer = BytesIO()
                 if conversion_type == "CSV":
                     df.to_csv(buffer, index=False)
@@ -106,7 +106,7 @@ if uploaded_files:
                     mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 buffer.seek(0)
                 st.download_button(
-                    label=f"📥 Download {file.name} as {conversion_type}",
+                    label=f" Download {file.name} as {conversion_type}",
                     data=buffer,
                     file_name=file_name,
                     mime=mime_type
