@@ -5,7 +5,7 @@ from io import BytesIO
 
 st.set_page_config(page_title="Data Sweeper", layout="wide")
 
-# Custom CSS
+# Custom CSS for dark mode
 st.markdown(
     """
     <style>
@@ -18,11 +18,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Title and Description
+# Title and description
 st.title("Data Sweeper Sterling Integrator")
 st.write("Transform Your Files between CSV and Excel formats with built-in data processing.")
 
-# File Uploader
+# File uploader
 uploaded_files = st.file_uploader("Upload Your files (CSV or Excel only):", 
                                   type=["csv", "xlsx"], 
                                   accept_multiple_files=True)
@@ -33,9 +33,9 @@ if uploaded_files:
 
         try:
             if file_ext == ".csv":
-                df = pd.read_csv(file, encoding="utf-8", errors="replace")  # 🔹 Fix Unicode Error
+                df = pd.read_csv(file, encoding="utf-8")  # ✅ Fixed Unicode issue
             elif file_ext == ".xlsx":
-                df = pd.read_excel(file)
+                df = pd.read_excel(file, engine="openpyxl")
             else:
                 st.error(f"Unsupported file type: {file_ext}")
                 continue
@@ -43,11 +43,11 @@ if uploaded_files:
             st.error(f"Error reading file {file.name}: {str(e)}")
             continue
 
-        # File Details
-        st.write(f"Preview of {file.name}:")
+        # File details and preview
+        st.write(f"### Preview of {file.name}:")
         st.dataframe(df.head())
 
-        # Data Cleaning Options
+        # Data cleaning options
         st.subheader("Data Cleaning Options")
         if st.checkbox(f"Clean data for {file.name}"):
             col1, col2 = st.columns(2)
@@ -55,24 +55,28 @@ if uploaded_files:
             with col1:
                 if st.button(f"Remove Duplicates - {file.name}"):
                     df.drop_duplicates(inplace=True)
-                    st.write("Duplicates removed!")
+                    st.success("Duplicates removed!")
 
             with col2:
                 if st.button(f"Fill Missing Values - {file.name}"):
                     numeric_cols = df.select_dtypes(include=['number']).columns
-                    df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())  # 🔹 Fixed `.fillna`
-                    st.write("Missing values filled!")
+                    df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())  # ✅ Fixed `.fillna`
+                    st.success("Missing values filled!")
 
             st.subheader("Select Columns to Keep")
-            columns = st.multiselect(f"Choose columns for {file.name}", df.columns, default=df.columns)
-            df = df[columns]
+            selected_columns = st.multiselect(f"Choose columns for {file.name}", df.columns, default=df.columns)
+            df = df[selected_columns]
 
-        # Data Visualization
+        # Data visualization
         st.subheader("Data Visualization")
         if st.checkbox(f"Show Visualization for {file.name}"):
-            st.bar_chart(df.select_dtypes(include="number").iloc[:, :2])
+            numeric_cols = df.select_dtypes(include=["number"])
+            if not numeric_cols.empty:
+                st.bar_chart(numeric_cols.iloc[:, :2])
+            else:
+                st.warning("No numeric columns available for visualization.")
 
-        # File Conversion Options
+        # File conversion options
         st.subheader("Conversion Options")
         conversion_type = st.radio(f"Convert {file.name} to:", ["CSV", "Excel"], key=file.name)
 
@@ -83,7 +87,7 @@ if uploaded_files:
                 file_name = file.name.replace(file_ext, ".csv")
                 mime_type = "text/csv"
             elif conversion_type == "Excel":
-                df.to_excel(buffer, index=False, engine="openpyxl")  # 🔹 Fix `.xlsx` issue
+                df.to_excel(buffer, index=False, engine="openpyxl")  # ✅ Fixed `.xlsx` issue
                 file_name = file.name.replace(file_ext, ".xlsx")
                 mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
